@@ -20,6 +20,36 @@ def _agent_metadata() -> dict[str, object]:
     }
 
 
+def _run_handshake_with_metadata(metadata: dict[str, object]) -> list[BaseException]:
+    server_sock, agent_sock = socket.socketpair()
+    errors: list[BaseException] = []
+
+    def run_handshake() -> None:
+        try:
+            with server_sock:
+                perform_handshake(server_sock)
+        except BaseException as exc:  # pragma: no cover - asserted by callers
+            errors.append(exc)
+
+    thread = threading.Thread(target=run_handshake, daemon=True)
+    thread.start()
+
+    with agent_sock:
+        send_message(
+            agent_sock,
+            {
+                "type": "hello",
+                "protocol": PROTOCOL_VERSION,
+                "agent": metadata,
+            },
+        )
+
+    thread.join(timeout=2)
+    if thread.is_alive():
+        raise AssertionError("handshake thread did not exit")
+    return errors
+
+
 class ServerHandshakeTests(unittest.TestCase):
     def test_valid_handshake(self) -> None:
         server_sock, agent_sock = socket.socketpair()
@@ -63,36 +93,31 @@ class ServerHandshakeTests(unittest.TestCase):
         self.assertEqual(allowed, set(capabilities()))
 
     def test_unexpected_capability_is_rejected(self) -> None:
-        server_sock, agent_sock = socket.socketpair()
-        errors: list[BaseException] = []
-
-        def run_handshake() -> None:
-            try:
-                with server_sock:
-                    perform_handshake(server_sock)
-            except BaseException as exc:  # pragma: no cover - asserted below
-                errors.append(exc)
-
-        thread = threading.Thread(target=run_handshake, daemon=True)
-        thread.start()
-
         metadata = _agent_metadata()
         metadata["capabilities"] = [*capabilities(), "shell"]
-        with agent_sock:
-            send_message(
-                agent_sock,
-                {
-                    "type": "hello",
-                    "protocol": PROTOCOL_VERSION,
-                    "agent": metadata,
-                },
-            )
+        errors = _run_handshake_with_metadata(metadata)
 
-        thread.join(timeout=2)
-        self.assertFalse(thread.is_alive())
         self.assertEqual(len(errors), 1)
         self.assertIsInstance(errors[0], ProtocolError)
         self.assertIn("unsupported capabilities", str(errors[0]))
+
+    def test_missing_required_capability_is_rejected(self) -> None:
+        metadata = _agent_metadata()
+        metadata["capabilities"] = [item for item in capabilities() if item != "exit"]
+        errors = _run_handshake_with_metadata(metadata)
+
+        self.assertEqual(len(errors), 1)
+        self.assertIsInstance(errors[0], ProtocolError)
+        self.assertIn("missing required capabilities", str(errors[0]))
+
+    def test_control_characters_in_metadata_are_rejected(self) -> None:
+        metadata = _agent_metadata()
+        metadata["hostname"] = "lab-host\nspoofed"
+        errors = _run_handshake_with_metadata(metadata)
+
+        self.assertEqual(len(errors), 1)
+        self.assertIsInstance(errors[0], ProtocolError)
+        self.assertIn("control characters", str(errors[0]))
 
 
 if __name__ == "__main__":
