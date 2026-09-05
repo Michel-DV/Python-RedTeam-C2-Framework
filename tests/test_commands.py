@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import unittest
 
-from commands import capabilities, execute_command
+from commands import MAX_COMMAND_LENGTH, MAX_ECHO_LENGTH, capabilities, execute_command
 
 
 class CommandTests(unittest.TestCase):
@@ -30,6 +30,27 @@ class CommandTests(unittest.TestCase):
         self.assertIn("ping", allowed)
         self.assertIn("exit", allowed)
         self.assertNotIn("shell", allowed)
+        self.assertEqual(len(allowed), len(set(allowed)))
+
+    def test_command_length_is_limited(self) -> None:
+        result = execute_command("x" * (MAX_COMMAND_LENGTH + 1))
+        self.assertFalse(result["ok"])
+        self.assertIn("exceeds", str(result["output"]))
+
+    def test_echo_length_is_limited(self) -> None:
+        result = execute_command("echo " + ("a" * (MAX_ECHO_LENGTH + 1)))
+        self.assertFalse(result["ok"])
+        self.assertIn("echo text exceeds", str(result["output"]))
+
+    def test_nul_byte_is_rejected(self) -> None:
+        result = execute_command("echo hello\x00world")
+        self.assertFalse(result["ok"])
+        self.assertIn("NUL", str(result["output"]))
+
+    def test_unbalanced_quotes_are_rejected(self) -> None:
+        result = execute_command('echo "unterminated')
+        self.assertFalse(result["ok"])
+        self.assertIn("parse error", str(result["output"]))
 
 
 if __name__ == "__main__":
