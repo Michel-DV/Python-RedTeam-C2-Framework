@@ -71,9 +71,7 @@ def validate_request_id(value: Any) -> str:
     if not value:
         raise ProtocolError("request_id must not be empty")
     if len(value) > MAX_REQUEST_ID_LENGTH:
-        raise ProtocolError(
-            f"request_id exceeds {MAX_REQUEST_ID_LENGTH} characters"
-        )
+        raise ProtocolError(f"request_id exceeds {MAX_REQUEST_ID_LENGTH} characters")
     if not all(33 <= ord(ch) <= 126 for ch in value):
         raise ProtocolError("request_id must contain printable ASCII without whitespace")
     return value
