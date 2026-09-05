@@ -69,7 +69,7 @@ class AgentSessionTests(unittest.TestCase):
         if errors:
             raise errors[0]
 
-    def test_missing_request_id_is_rejected(self) -> None:
+    def test_invalid_request_ids_are_rejected(self) -> None:
         controller, agent_sock = socket.socketpair()
         errors: list[BaseException] = []
 
@@ -94,10 +94,24 @@ class AgentSessionTests(unittest.TestCase):
                     "session_id": "test-session",
                 },
             )
+
             send_message(controller, {"type": "command", "command": "ping"})
             response = recv_message(controller)
             self.assertEqual(response["type"], "error")
             self.assertIn("request_id", str(response["error"]))
+
+            send_message(
+                controller,
+                {
+                    "type": "command",
+                    "request_id": "other-session-1",
+                    "command": "ping",
+                },
+            )
+            response = recv_message(controller)
+            self.assertEqual(response["type"], "error")
+            self.assertEqual(response["request_id"], "other-session-1")
+            self.assertIn("active session", str(response["error"]))
 
             send_message(
                 controller,
