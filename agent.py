@@ -38,7 +38,7 @@ def handle_session(sock: socket.socket) -> None:
         raise ProtocolError("expected hello_ack")
     if reply.get("protocol") != PROTOCOL_VERSION:
         raise ProtocolError("protocol version mismatch")
-    validate_request_id(reply.get("session_id"))
+    session_id = validate_request_id(reply.get("session_id"))
     sock.settimeout(None)
 
     while True:
@@ -61,6 +61,17 @@ def handle_session(sock: socket.socket) -> None:
                 {
                     "type": "error",
                     "error": str(exc),
+                },
+            )
+            continue
+
+        if not request_id.startswith(f"{session_id}-"):
+            send_message(
+                sock,
+                {
+                    "type": "error",
+                    "request_id": request_id,
+                    "error": "request_id does not belong to the active session",
                 },
             )
             continue
