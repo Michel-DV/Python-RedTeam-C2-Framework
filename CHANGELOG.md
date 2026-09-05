@@ -8,6 +8,7 @@ All notable changes to the lab simulator are documented here.
 
 - protocol v2 request/response correlation with `request_id`
 - session identifiers in the handshake
+- request IDs bound to the active session
 - stricter agent metadata and capability validation
 - controller-side command allowlist enforcement
 - handshake/connect timeouts
@@ -22,14 +23,16 @@ All notable changes to the lab simulator are documented here.
 - reduced the maximum protocol frame from 1 MiB to 64 KiB
 - tightened command and echo input limits
 - improved graceful interruption handling
-- expanded tests for malformed frames, invalid request IDs, duplicate JSON keys, and command validation
+- expanded tests for malformed frames, invalid request IDs, duplicate JSON keys, metadata validation, and command validation
+- updated GitHub Actions to Node 24-based `checkout@v6` and `setup-python@v6`
+- pinned the CI Ruff version for reproducible linting
 
 ### Security
 
 - duplicate JSON keys are rejected
-- malformed or oversized request IDs are rejected
-- unsupported agent capabilities fail the handshake
-- responses must match the active request ID
+- malformed, oversized, or cross-session request IDs are rejected
+- unsupported or incomplete agent capabilities fail the handshake
+- response IDs, command names, output types, and boolean result state are validated
 - the loopback-only and no-shell design remains unchanged
 
 ## 2.0.0
