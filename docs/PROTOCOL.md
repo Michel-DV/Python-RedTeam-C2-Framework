@@ -61,7 +61,7 @@ Sent by the agent immediately after connecting.
 }
 ```
 
-The controller validates required metadata and rejects capabilities that are not present in its own local allowlist.
+The controller validates required metadata, rejects capabilities outside its own local allowlist, and requires the basic `help` and `exit` capabilities so the interactive session remains controllable.
 
 ## `hello_ack`
 
@@ -88,7 +88,7 @@ The session identifier is used as part of request correlation. It is not an auth
 }
 ```
 
-Request identifiers must be non-empty printable ASCII without whitespace and are limited to 64 characters.
+Request identifiers must be non-empty printable ASCII without whitespace and are limited to 64 characters. The agent also requires every request ID to begin with the active session ID followed by `-`.
 
 The controller sends only commands present in the validated allowlist.
 
@@ -104,7 +104,7 @@ The controller sends only commands present in the validated allowlist.
 }
 ```
 
-The controller requires the response `request_id` to exactly match the currently active request.
+The controller requires the response `request_id` to exactly match the currently active request. It also validates that `ok` is a boolean, `output` is a string, and the returned command name matches the request.
 
 ## `error`
 
