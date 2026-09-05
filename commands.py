@@ -8,8 +8,8 @@ import platform as platform_module
 import shlex
 import socket
 import sys
-from datetime import datetime, timezone
-from typing import Callable
+from collections.abc import Callable
+from datetime import UTC, datetime
 
 VERSION = "2.1.0"
 MAX_COMMAND_LENGTH = 512
@@ -22,7 +22,7 @@ _SIMPLE_COMMANDS: dict[str, Callable[[], str]] = {
     "cwd": os.getcwd,
     "platform": platform_module.platform,
     "python": platform_module.python_version,
-    "time": lambda: datetime.now(timezone.utc).isoformat(),
+    "time": lambda: datetime.now(UTC).isoformat(),
 }
 
 _HELP = """Available commands:
