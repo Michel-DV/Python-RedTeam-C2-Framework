@@ -22,6 +22,7 @@ LOOPBACK_HOST = "127.0.0.1"
 DEFAULT_PORT = 5555
 HANDSHAKE_TIMEOUT = 5.0
 _MAX_METADATA_LENGTH = 256
+_REQUIRED_CAPABILITIES = {"help", "exit"}
 
 
 def perform_handshake(client: socket.socket) -> tuple[dict[str, Any], str, set[str]]:
@@ -86,10 +87,7 @@ def run_session(client: socket.socket) -> None:
 
         command_name = parts[0].lower()
         if command_name not in allowed_commands:
-            print(
-                f"[!] unsupported simulator command: {command_name}. "
-                "Type 'help' for the allowlist."
-            )
+            print(f"[!] unsupported simulator command: {command_name}. Type 'help' for the allowlist.")
             continue
 
         request_counter += 1
@@ -117,13 +115,21 @@ def run_session(client: socket.socket) -> None:
         if response_type != "result":
             raise ProtocolError(f"unexpected response type: {response_type!r}")
 
+        ok = response.get("ok")
+        if not isinstance(ok, bool):
+            raise ProtocolError("result ok field must be a boolean")
+
+        response_command = response.get("command")
+        if not isinstance(response_command, str) or response_command != command_name:
+            raise ProtocolError("result command does not match the active request")
+
         output = response.get("output", "")
         if not isinstance(output, str):
             raise ProtocolError("result output must be a string")
         if output:
             print(output)
 
-        if command_name == "exit" and response.get("ok") is True:
+        if command_name == "exit" and ok:
             return
 
 
@@ -152,9 +158,7 @@ def run_server(port: int) -> int:
 
 
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
-    parser = argparse.ArgumentParser(
-        description="Loopback-only C2 protocol lab controller."
-    )
+    parser = argparse.ArgumentParser(description="Loopback-only C2 protocol lab controller.")
     parser.add_argument(
         "--port",
         type=int,
@@ -187,6 +191,12 @@ def _validate_capabilities(value: Any) -> set[str]:
         raise ProtocolError(
             "agent reported unsupported capabilities: " + ", ".join(sorted(unexpected))
         )
+
+    missing_required = _REQUIRED_CAPABILITIES - reported
+    if missing_required:
+        raise ProtocolError(
+            "agent is missing required capabilities: " + ", ".join(sorted(missing_required))
+        )
     return reported
 
 
@@ -197,7 +207,7 @@ def _validate_agent_metadata(agent: dict[str, Any]) -> None:
             raise ProtocolError(f"agent metadata field {field!r} must be a non-empty string")
         if len(value) > _MAX_METADATA_LENGTH:
             raise ProtocolError(f"agent metadata field {field!r} is too long")
-        if any(ord(ch) < 32 and ch not in "\t" for ch in value):
+        if not all(ch.isprintable() or ch == "\t" for ch in value):
             raise ProtocolError(f"agent metadata field {field!r} contains control characters")
 
 
