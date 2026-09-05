@@ -87,7 +87,9 @@ def run_session(client: socket.socket) -> None:
 
         command_name = parts[0].lower()
         if command_name not in allowed_commands:
-            print(f"[!] unsupported simulator command: {command_name}. Type 'help' for the allowlist.")
+            print(
+                f"[!] unsupported simulator command: {command_name}. Type 'help' for the allowlist."
+            )
             continue
 
         request_counter += 1
