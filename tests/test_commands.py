@@ -4,7 +4,13 @@ import unittest
 from unittest.mock import patch
 
 import commands
-from commands import MAX_COMMAND_LENGTH, MAX_ECHO_LENGTH, agent_metadata, capabilities, execute_command
+from commands import (
+    MAX_COMMAND_LENGTH,
+    MAX_ECHO_LENGTH,
+    agent_metadata,
+    capabilities,
+    execute_command,
+)
 
 
 class CommandTests(unittest.TestCase):
@@ -48,7 +54,10 @@ class CommandTests(unittest.TestCase):
                 self.assertIsInstance(result["output"], str)
 
     def test_handler_os_error_is_reported(self) -> None:
-        with patch.dict(commands._SIMPLE_COMMANDS, {"hostname": lambda: (_ for _ in ()).throw(OSError("boom"))}):
+        def fail() -> str:
+            raise OSError("boom")
+
+        with patch.dict(commands._SIMPLE_COMMANDS, {"hostname": fail}):
             result = execute_command("hostname")
         self.assertFalse(result["ok"])
         self.assertIn("command failed", str(result["output"]))
