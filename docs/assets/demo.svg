@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1100" height="610" viewBox="0 0 1100 610" role="img" aria-labelledby="title desc">
+  <title id="title">Python C2 Lab Simulator terminal demo</title>
+  <desc id="desc">A safe loopback-only controller and agent session showing ping, platform, echo, and exit commands.</desc>
+  <rect width="1100" height="610" rx="22" fill="#0d1117"/>
+  <rect x="1" y="1" width="1098" height="608" rx="21" fill="none" stroke="#30363d" stroke-width="2"/>
+  <rect x="1" y="1" width="1098" height="52" rx="21" fill="#161b22"/>
+  <rect x="1" y="31" width="1098" height="22" fill="#161b22"/>
+  <circle cx="30" cy="27" r="7" fill="#ff5f56"/>
+  <circle cx="54" cy="27" r="7" fill="#ffbd2e"/>
+  <circle cx="78" cy="27" r="7" fill="#27c93f"/>
+  <text x="550" y="33" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="16" fill="#8b949e">Python C2 Lab Simulator v2.1 · loopback-only demo</text>
+  <g font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="17">
+    <text x="30" y="88" fill="#79c0ff">$ python server.py</text>
+    <text x="30" y="119" fill="#c9d1d9">[*] Listening on 127.0.0.1:5555</text>
+    <text x="30" y="150" fill="#8b949e">[*] Loopback-only lab mode; remote clients are intentionally unsupported</text>
+    <text x="30" y="181" fill="#c9d1d9">[*] Connection from 127.0.0.1:49152</text>
+    <text x="30" y="212" fill="#3fb950">[+] Lab agent connected</text>
+    <text x="58" y="243" fill="#c9d1d9">host: lab-host</text>
+    <text x="58" y="274" fill="#c9d1d9">user: analyst</text>
+    <text x="58" y="305" fill="#c9d1d9">platform: Linux</text>
+    <text x="58" y="336" fill="#c9d1d9">simulator: 2.1.0</text>
+    <text x="30" y="379" fill="#d2a8ff">lab-c2&gt; ping</text>
+    <text x="30" y="408" fill="#3fb950">pong</text>
+    <text x="30" y="447" fill="#d2a8ff">lab-c2&gt; platform</text>
+    <text x="30" y="476" fill="#c9d1d9">Linux-6.x-x86_64-with-glibc...</text>
+    <text x="30" y="515" fill="#d2a8ff">lab-c2&gt; echo protocol test</text>
+    <text x="30" y="544" fill="#3fb950">protocol test</text>
+    <text x="30" y="583" fill="#d2a8ff">lab-c2&gt; exit</text>
+    <text x="830" y="583" fill="#8b949e">session closing ✓</text>
+  </g>
+</svg>
