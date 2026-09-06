@@ -12,9 +12,25 @@ Version 2.1.0 hardens the local controller/agent lab while preserving its delibe
 - Expanded unit and integration test coverage
 - Ruff lint and formatting checks in CI
 - Python 3.11, 3.12, and 3.13 CI matrix
-- Automated branch-coverage quality gate with downloadable HTML report
+- **90% minimum branch-coverage quality gate**
+- **91.8% measured branch coverage** at release preparation time
+- Downloadable HTML coverage report artifact from CI
 - New protocol and security documentation
 - Terminal demo preview plus asciinema-compatible recording
+
+## Validation snapshot
+
+The release-prep CI executed **44 tests** successfully. Coverage on Python 3.13 measured:
+
+| Module | Branch coverage |
+| --- | ---: |
+| `agent.py` | 97.6% |
+| `commands.py` | 97.7% |
+| `protocol.py` | 100.0% |
+| `server.py` | 83.6% |
+| **Overall** | **91.8%** |
+
+CI also validates Ruff lint, Ruff formatting, compile checks, and the complete test suite on Python 3.11, 3.12, and 3.13.
 
 ## Security boundary
 
@@ -35,20 +51,10 @@ The simulator remains intentionally constrained:
 
 Protocol v2 is intentionally incompatible with the earlier protocol v1 message format. Controller and agent should be upgraded together.
 
-## Validation
-
-The repository CI validates:
-
-- Ruff lint
-- Ruff formatting
-- compile checks
-- unit/integration tests on Python 3.11, 3.12, and 3.13
-- branch coverage against the configured quality gate
-
 ## Suggested GitHub release metadata
 
 **Tag:** `v2.1.0`  
 **Title:** `Python C2 Lab Simulator v2.1.0`  
 **Target:** `main`
 
-Use the sections above as the GitHub Release body.
+Use this document as the GitHub Release body.
