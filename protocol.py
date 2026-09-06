@@ -32,8 +32,6 @@ def send_message(sock: socket, message: dict[str, Any]) -> None:
     except (TypeError, ValueError) as exc:
         raise ProtocolError("message is not JSON serializable") from exc
 
-    if not payload:
-        raise ProtocolError("empty payload")
     if len(payload) > MAX_FRAME_SIZE:
         raise ProtocolError(f"frame exceeds {MAX_FRAME_SIZE} bytes")
 
