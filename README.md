@@ -4,6 +4,7 @@ A dependency-free Python lab that demonstrates the protocol and session mechanic
 
 ![Python](https://img.shields.io/badge/Python-3.11%2B-3776AB?logo=python&logoColor=white)
 ![CI](https://github.com/Michel-DV/Python-RedTeam-C2-Framework/actions/workflows/ci.yml/badge.svg)
+![Coverage gate](https://img.shields.io/badge/branch%20coverage-%E2%89%A590%25-brightgreen)
 ![License](https://img.shields.io/badge/License-MIT-blue.svg)
 
 ## Overview
@@ -22,7 +23,7 @@ The project keeps the useful engineering concepts:
 - protocol validation and error handling
 - graceful shutdown
 - automated unit and integration tests
-- CI linting, formatting checks, and multi-version tests
+- CI linting, formatting checks, multi-version tests, and branch coverage
 
 It intentionally does **not** provide:
 
@@ -37,6 +38,12 @@ It intentionally does **not** provide:
 - internet-facing listeners
 
 Both sides are fixed to `127.0.0.1`. The controller also validates the agent capability list against its own local allowlist before sending commands.
+
+## Demo
+
+![Terminal demo](docs/assets/demo.svg)
+
+An asciinema-compatible recording is also included at [`docs/demo.cast`](docs/demo.cast).
 
 ## Architecture
 
@@ -92,7 +99,7 @@ The command line is limited to 512 characters and NUL bytes are rejected.
 - Python 3.11+
 - No third-party runtime packages
 
-Ruff is used only in development/CI for lint and formatting checks.
+Ruff and coverage.py are used only in development/CI.
 
 ## Run the lab
 
@@ -124,29 +131,6 @@ python server.py --version
 python agent.py --version
 ```
 
-Example session:
-
-```text
-[*] Listening on 127.0.0.1:5555
-[*] Loopback-only lab mode; remote clients are intentionally unsupported
-[*] Connection from 127.0.0.1:49152
-[+] Lab agent connected
-    host: lab-host
-    user: analyst
-    platform: Linux
-    simulator: 2.1.0
-    type 'help' for supported simulator commands
-
-lab-c2> ping
-pong
-lab-c2> platform
-Linux-6.x-x86_64-with-glibc...
-lab-c2> echo protocol test
-protocol test
-lab-c2> exit
-session closing
-```
-
 ## Project structure
 
 ```text
@@ -159,9 +143,14 @@ session closing
 ├── SECURITY.md
 ├── CHANGELOG.md
 ├── docs/
-│   └── PROTOCOL.md
+│   ├── PROTOCOL.md
+│   ├── RELEASE_NOTES_v2.1.0.md
+│   ├── demo.cast
+│   └── assets/
+│       └── demo.svg
 ├── tests/
 │   ├── test_agent.py
+│   ├── test_cli_session.py
 │   ├── test_commands.py
 │   ├── test_protocol.py
 │   └── test_server.py
@@ -186,7 +175,7 @@ Connects only to `127.0.0.1`, performs the versioned handshake, validates sessio
 
 Binds only to `127.0.0.1`, validates the handshake and reported capabilities, correlates every response with its request ID, and rejects unsupported commands before sending them.
 
-## Testing
+## Testing and quality gate
 
 Run the full suite:
 
@@ -200,7 +189,7 @@ Compile check:
 python -m compileall -q .
 ```
 
-Optional local Ruff checks:
+Local lint/format checks:
 
 ```bash
 python -m pip install ruff
@@ -208,22 +197,31 @@ ruff check .
 ruff format --check .
 ```
 
+Branch coverage:
+
+```bash
+python -m pip install coverage
+coverage run -m unittest discover -s tests -v
+coverage report
+```
+
+CI enforces a **90% minimum branch-coverage gate**. The v2.1 release-prep baseline measured **91.8%** overall branch coverage, with `protocol.py` at **100%**. CI also publishes a downloadable HTML coverage report artifact for each run.
+
 Tests cover:
 
 - framing round trips
-- zero-length and oversized frames
-- non-object JSON
+- invalid UTF-8 and malformed JSON
 - duplicate JSON keys
-- request ID validation
-- command allowlisting
-- command and echo length limits
-- malformed command input
-- controller/agent handshake
-- capability validation
+- truncated and oversized frames
+- request ID validation and session binding
+- command allowlisting and input limits
+- agent/controller handshake validation
+- controller-side capability validation
 - request/response correlation
 - clean session termination
+- CLI/runtime success and error paths
 
-The integration tests use `socket.socketpair()` and never reach an external network.
+Integration tests use `socket.socketpair()` and never reach an external network.
 
 ## Detection-engineering value
 
@@ -251,7 +249,7 @@ Frames, request IDs, commands, metadata, and echoed text have explicit limits. T
 Protocol v2 associates each command/result pair with a request ID so unexpected or out-of-order responses are detected instead of silently accepted.
 
 **Standard library runtime**  
-The simulator uses Python's standard library only. Ruff is a development-time quality tool, not a runtime dependency.
+The simulator uses Python's standard library only. Ruff and coverage.py are development-time quality tools, not runtime dependencies.
 
 ## Limitations
 
@@ -262,6 +260,10 @@ It does not provide transport encryption because traffic never leaves loopback. 
 ## Security
 
 See [`SECURITY.md`](SECURITY.md) for the project's security boundaries and vulnerability-reporting guidance.
+
+## Release notes
+
+Prepared v2.1.0 release notes are available in [`docs/RELEASE_NOTES_v2.1.0.md`](docs/RELEASE_NOTES_v2.1.0.md).
 
 ## Legal and ethical use
 
